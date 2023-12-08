@@ -14,14 +14,14 @@ from PIL import Image
 model = tf.keras.models.load_model('./model_skincare.h5')
 app = FastAPI()
 
-#Image processing
+# Image processing
 def process_image(image_bytes):
     image = Image.open(BytesIO(image_bytes))
     image = image.resize((350, 350))  # Resize the image as per the model requirements
     image = np.array(image) / 255.0  # Normalize pixel values
     return image
 
-#  health check
+# Health check
 @app.get("/")
 def index():
     return "API WORKING"
@@ -31,7 +31,7 @@ def index():
 async def predict_skincare(photo: UploadFile = File(...)):
     try:
         response = {"predict_result": None}
-        # Check apakah file Gambar
+        # Check wether the file is an image
         if photo.content_type not in ["image/jpeg", "image/png"]:
             response['predict_result'] = "File is Not an Image"
             return response
