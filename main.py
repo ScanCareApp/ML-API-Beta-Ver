@@ -31,15 +31,15 @@ def process_image(image_bytes):
 def index():
     return "API WORKING"
 
-
 @app.post("/predict_image")
 async def predict_image(photo: UploadFile = File(...)):
     try:
         response = {"predict_result": None}
-        # Check wether the file is an image
+        # Check whether the file is an image
         if photo.content_type not in ["image/jpeg", "image/png"]:
             response['predict_result'] = "File is Not an Image"
             return response
+        
         contents = await photo.read()
         processed_image = process_image(contents)
         processed_image = np.expand_dims(processed_image, axis=0)  # Add batch dimension
@@ -53,7 +53,7 @@ async def predict_image(photo: UploadFile = File(...)):
         # Acquire a connection from the pool
         with pool.connect() as conn:
             # Create a SQL statement with placeholders
-            sql_statement = text("SELECT `No.BPOM` FROM produk WHERE `Nama Produk` = :product_name")
+            sql_statement = text("SELECT NoBPOM FROM produk WHERE `Nama Produk` = :product_name;")
 
             # Bind the parameter to the SQL statement
             sql_statement = sql_statement.bindparams(product_name=predicted_class_name)
@@ -64,15 +64,18 @@ async def predict_image(photo: UploadFile = File(...)):
             # Fetch the results
             query_results = result.fetchall()
 
+        # Process query_results to extract the necessary information
+        formatted_results = [{'NoBPOM': row[0]} for row in query_results]
+
         # Returning the prediction and SQL query result
         response['predict_result'] = predicted_class_name
-        response['sql_query_result'] = query_results
+        response['sql_query_result'] = formatted_results
 
         return response
+    
     except Exception as e:
         traceback.print_exc()
         return {"predict_result": "Internal Server Error"}
-
 
 port = os.environ.get("PORT", 8080)
 print(f"Listening to http://0.0.0.0:{port}")
