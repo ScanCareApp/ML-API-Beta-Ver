@@ -10,9 +10,14 @@ from pydantic import BaseModel
 from urllib.request import Request
 from fastapi import FastAPI, Response, UploadFile, File
 from PIL import Image
+from connect import create_connection_pool
+from sqlalchemy import text
 
 model = tf.keras.models.load_model('./model_skincare.h5')
 app = FastAPI()
+
+# Initialize the connection pool
+pool = create_connection_pool()
 
 # Image processing
 def process_image(image_bytes):
@@ -28,7 +33,7 @@ def index():
 
 
 @app.post("/predict_image")
-async def predict_skincare(photo: UploadFile = File(...)):
+async def predict_image(photo: UploadFile = File(...)):
     try:
         response = {"predict_result": None}
         # Check wether the file is an image
@@ -44,6 +49,25 @@ async def predict_skincare(photo: UploadFile = File(...)):
         class_names = ['Age Miracle Serum', 'Age Miracle Whip Cream', 'Men Acne Solution Facial Foam']
         predicted_class_name = class_names[predicted_class]
         response['predict_result'] = predicted_class_name
+
+        # Acquire a connection from the pool
+        with pool.connect() as conn:
+            # Create a SQL statement with placeholders
+            sql_statement = text("SELECT `No.BPOM` FROM produk WHERE `Nama Produk` = :product_name")
+
+            # Bind the parameter to the SQL statement
+            sql_statement = sql_statement.bindparams(product_name=predicted_class_name)
+
+            # Execute the SQL query
+            result = conn.execute(sql_statement)
+
+            # Fetch the results
+            query_results = result.fetchall()
+
+        # Returning the prediction and SQL query result
+        response['predict_result'] = predicted_class_name
+        response['sql_query_result'] = query_results
+
         return response
     except Exception as e:
         traceback.print_exc()

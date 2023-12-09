@@ -33,7 +33,10 @@ def getconn():
     return conn
 
 # Create connection pool
-pool = sqlalchemy.create_engine(
-    "mysql+pymysql://",
-    creator=getconn,
-)
+def create_connection_pool():
+    return sqlalchemy.create_engine(
+        "mysql+pymysql://",
+        creator=getconn,
+        pool_size=5,  # Set desired pool size
+        max_overflow=10  # Set desired max overflow value
+    )
