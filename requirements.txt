@@ -5,6 +5,6 @@ python-multipart
 numpy
 Pillow
 tensorflow
-cloud-sql-python-connector["pymysql"]
+cloud-sql-python-connector[pymysql]
 SQLAlchemy
 google-cloud-secret-manager
