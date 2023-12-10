@@ -3,13 +3,12 @@ import uvicorn
 import traceback
 import tensorflow as tf
 import numpy as np
+
 from io import BytesIO
 from PIL import Image
-
 from pydantic import BaseModel
 from urllib.request import Request
 from fastapi import FastAPI, Response, UploadFile, File
-from PIL import Image
 from connect import create_connection_pool
 from sqlalchemy import text
 
