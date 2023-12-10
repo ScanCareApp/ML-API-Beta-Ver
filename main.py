@@ -29,12 +29,44 @@ def process_image(image_bytes):
 # Function to fetch product details
 def fetch_product_details(product_name):
     with pool.connect() as conn:
-        sql_statement = text("SELECT NoBPOM, `Nama Produk`, gambar FROM produk WHERE `Nama Produk` = :product_name;")
+        sql_statement = text(
+            "SELECT NoBPOM, `Nama Produk`, gambar "
+            "FROM produk "
+            "WHERE `Nama Produk` = :product_name;"
+        )
         sql_statement = sql_statement.bindparams(product_name=product_name)
         result = conn.execute(sql_statement)
         query_results = result.fetchall()
-    formatted_results = [{'NoBPOM': row[0], 'product_name': row[1], 'image_url': row[2]} for row in query_results]
+    formatted_results = [
+        {
+            'NoBPOM': row[0],
+            'product_name': row[1],
+            'image_url': row[2]
+        } for row in query_results
+    ]
     return formatted_results
+
+# Function to fetch product ingredients
+def fetch_product_ingredients(nobpom):
+    with pool.connect() as conn:
+        sql_statement = text(
+            "SELECT ingredient.idIngredient, ingredient.nameIngredients, ingredient.fungsi "
+            "FROM detailproduk "
+            "JOIN ingredient ON detailproduk.idIngredient = ingredient.idIngredient "
+            "WHERE detailproduk.NoBPOM = :nobpom;"
+        )
+        sql_statement = sql_statement.bindparams(nobpom=nobpom)
+        result = conn.execute(sql_statement)
+        query_results = result.fetchall()
+    formatted_results = [
+        {
+            'idIngredient': row[0],
+            'nameIngredients': row[1],
+            'fungsi': row[2]
+        } for row in query_results
+    ]
+    return formatted_results
+
 
 # Health check
 @app.get("/")
@@ -60,10 +92,16 @@ async def predict_image(photo: UploadFile = File(...)):
         predicted_class_name = class_names[predicted_class]
         
         product_details = fetch_product_details(predicted_class_name)
-        if not product_details:
-            return {"error_message": "Product details not found"}
 
-        response['product_details'] = product_details
+        nobpom = product_details[0]['NoBPOM']
+        ingredients = fetch_product_ingredients(nobpom)
+        
+        response['product_details'] = {
+            'NoBPOM': product_details[0]['NoBPOM'],
+            'product_name': predicted_class_name,
+            'image_url': product_details[0]['image_url'],
+            'ingredients': ingredients
+        }
 
         return response
     
