@@ -108,6 +108,6 @@ async def predict_image(photo: UploadFile = File(...)):
         traceback.print_exc()
         return {"error_message": str(e)}
 
-port = os.environ.get("PORT", 8080)
+port = int(os.environ.get('PORT', 8080))
 print(f"Listening to http://0.0.0.0:{port}")
 uvicorn.run(app, host='0.0.0.0', port=port)
