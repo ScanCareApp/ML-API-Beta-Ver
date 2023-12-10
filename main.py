@@ -26,57 +26,51 @@ def process_image(image_bytes):
     image = np.array(image) / 255.0  # Normalize pixel values
     return image
 
+# Function to fetch product details
+def fetch_product_details(product_name):
+    with pool.connect() as conn:
+        sql_statement = text("SELECT NoBPOM, `Nama Produk`, gambar FROM produk WHERE `Nama Produk` = :product_name;")
+        sql_statement = sql_statement.bindparams(product_name=product_name)
+        result = conn.execute(sql_statement)
+        query_results = result.fetchall()
+    formatted_results = [{'NoBPOM': row[0], 'product_name': row[1], 'image_url': row[2]} for row in query_results]
+    return formatted_results
+
 # Health check
 @app.get("/")
 def index():
     return "API WORKING"
 
+# Endpoint for image prediction
 @app.post("/predict_image")
 async def predict_image(photo: UploadFile = File(...)):
     try:
-        response = {"predict_result": None}
-        # Check whether the file is an image
+        response = {"product_details": None}
         if photo.content_type not in ["image/jpeg", "image/png"]:
-            response['predict_result'] = "File is Not an Image"
+            response['error_message'] = "File is Not an Image"
             return response
         
         contents = await photo.read()
         processed_image = process_image(contents)
-        processed_image = np.expand_dims(processed_image, axis=0)  # Add batch dimension
+        processed_image = np.expand_dims(processed_image, axis=0)
 
         prediction = model.predict(processed_image)
         predicted_class = np.argmax(prediction)
         class_names = ['Age Miracle Serum', 'Age Miracle Whip Cream', 'Men Acne Solution Facial Foam']
         predicted_class_name = class_names[predicted_class]
-        response['predict_result'] = predicted_class_name
+        
+        product_details = fetch_product_details(predicted_class_name)
+        if not product_details:
+            return {"error_message": "Product details not found"}
 
-        # Acquire a connection from the pool
-        with pool.connect() as conn:
-            # Create a SQL statement with placeholders
-            sql_statement = text("SELECT NoBPOM FROM produk WHERE `Nama Produk` = :product_name;")
-
-            # Bind the parameter to the SQL statement
-            sql_statement = sql_statement.bindparams(product_name=predicted_class_name)
-
-            # Execute the SQL query
-            result = conn.execute(sql_statement)
-
-            # Fetch the results
-            query_results = result.fetchall()
-
-        # Process query_results to extract the necessary information
-        formatted_results = [{'NoBPOM': row[0]} for row in query_results]
-
-        # Returning the prediction and SQL query result
-        response['predict_result'] = predicted_class_name
-        response['sql_query_result'] = formatted_results
+        response['product_details'] = product_details
 
         return response
     
     except Exception as e:
         traceback.print_exc()
-        return {"predict_result": "Internal Server Error"}
+        return {"error_message": str(e)}
 
 port = os.environ.get("PORT", 8080)
-print(f"Listening to http://0.0.0.0:{port}")
-uvicorn.run(app, host='0.0.0.0', port=port)
+print(f"Listening to http://localhost:{port}")
+uvicorn.run(app, host='localhost', port=port)
