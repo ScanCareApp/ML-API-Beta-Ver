@@ -8,7 +8,8 @@ from io import BytesIO
 from PIL import Image
 from pydantic import BaseModel
 from urllib.request import Request
-from fastapi import FastAPI, Response, UploadFile, File
+from fastapi import FastAPI, Response, UploadFile, File, HTTPException, status
+from fastapi.responses import JSONResponse
 from connect import create_connection_pool
 from sqlalchemy import text
 from class_names import class_names
@@ -38,6 +39,7 @@ def fetch_product_details(product_name):
         result = conn.execute(sql_statement)
         query_results = result.fetchall()
     
+    # Handle missing product details
     if not query_results:
         return [{'NoBPOM': None, 'product_name': product_name, 'image_url': None}]
 
@@ -81,10 +83,9 @@ def index():
 @app.post("/predict_image")
 async def predict_image(photo: UploadFile = File(...)):
     try:
-        response = {"product_details": None}
+        response = {} 
         if photo.content_type not in ["image/jpeg", "image/png"]:
-            response['error_message'] = "File is Not an Image"
-            return response
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File is Not an Image")
         
         contents = await photo.read()
         processed_image = process_image(contents)
@@ -106,11 +107,13 @@ async def predict_image(photo: UploadFile = File(...)):
             'ingredients': ingredients
         }
 
-        return response
+        return JSONResponse(content=response, status_code=200)
     
+    except HTTPException as http_err:
+        raise http_err
     except Exception as e:
         traceback.print_exc()
-        return {"error_message": str(e)}
+        raise HTTPException(status_code=500, detail=str(e))
 
 port = int(os.environ.get('PORT', 8080))
 print(f"Listening to http://0.0.0.0:{port}")
