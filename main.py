@@ -23,6 +23,8 @@ pool = create_connection_pool()
 # Image processing
 def process_image(image_bytes):
     image = Image.open(BytesIO(image_bytes))
+    if image.mode != 'RGB':
+        image = image.convert('RGB')
     image = image.resize((350, 350))  # Resize the image as per the model requirements
     image = np.array(image) / 255.0  # Normalize pixel values
     return image
@@ -77,7 +79,7 @@ def fetch_product_ingredients(nobpom):
 # Health check
 @app.get("/")
 def index():
-    return "API WORKING"
+    return Response(content="API WORKING", status_code=200)
 
 # Endpoint for image prediction
 @app.post("/predict_image")
@@ -112,8 +114,10 @@ async def predict_image(photo: UploadFile = File(...)):
     except HTTPException as http_err:
         raise http_err
     except Exception as e:
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+        # utk dev
+        # traceback.print_exc()
+        # raise HTTPException(status_code=500, detail=str(e))
 
 port = int(os.environ.get('PORT', 8080))
 print(f"Listening to http://0.0.0.0:{port}")
