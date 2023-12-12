@@ -11,6 +11,7 @@ from urllib.request import Request
 from fastapi import FastAPI, Response, UploadFile, File
 from connect import create_connection_pool
 from sqlalchemy import text
+from class_names import class_names
 
 model = tf.keras.models.load_model('./model_skincare.h5')
 app = FastAPI()
@@ -36,6 +37,10 @@ def fetch_product_details(product_name):
         sql_statement = sql_statement.bindparams(product_name=product_name)
         result = conn.execute(sql_statement)
         query_results = result.fetchall()
+    
+    if not query_results:
+        return [{'NoBPOM': None, 'product_name': product_name, 'image_url': None}]
+
     formatted_results = [
         {
             'NoBPOM': row[0],
@@ -87,7 +92,6 @@ async def predict_image(photo: UploadFile = File(...)):
 
         prediction = model.predict(processed_image)
         predicted_class = np.argmax(prediction)
-        class_names = ['Age Miracle Serum', 'Age Miracle Whip Cream', 'Men Acne Solution Facial Foam']
         predicted_class_name = class_names[predicted_class]
         
         product_details = fetch_product_details(predicted_class_name)
