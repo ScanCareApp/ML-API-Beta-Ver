@@ -8,9 +8,11 @@ from io import BytesIO
 from PIL import Image
 from pydantic import BaseModel
 from urllib.request import Request
-from fastapi import FastAPI, Response, UploadFile, File
+from fastapi import FastAPI, Response, UploadFile, File, HTTPException, status
+from fastapi.responses import JSONResponse
 from connect import create_connection_pool
 from sqlalchemy import text
+from class_names import class_names
 
 model = tf.keras.models.load_model('./model_skincare.h5')
 app = FastAPI()
@@ -21,6 +23,8 @@ pool = create_connection_pool()
 # Image processing
 def process_image(image_bytes):
     image = Image.open(BytesIO(image_bytes))
+    if image.mode != 'RGB':
+        image = image.convert('RGB')
     image = image.resize((350, 350))  # Resize the image as per the model requirements
     image = np.array(image) / 255.0  # Normalize pixel values
     return image
@@ -36,6 +40,11 @@ def fetch_product_details(product_name):
         sql_statement = sql_statement.bindparams(product_name=product_name)
         result = conn.execute(sql_statement)
         query_results = result.fetchall()
+    
+    # Handle missing product details
+    if not query_results:
+        return [{'NoBPOM': None, 'product_name': product_name, 'image_url': None}]
+
     formatted_results = [
         {
             'NoBPOM': row[0],
@@ -70,16 +79,15 @@ def fetch_product_ingredients(nobpom):
 # Health check
 @app.get("/")
 def index():
-    return "API WORKING"
+    return Response(content="API WORKING", status_code=200)
 
 # Endpoint for image prediction
 @app.post("/predict_image")
 async def predict_image(photo: UploadFile = File(...)):
     try:
-        response = {"product_details": None}
+        response = {} 
         if photo.content_type not in ["image/jpeg", "image/png"]:
-            response['error_message'] = "File is Not an Image"
-            return response
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File is Not an Image")
         
         contents = await photo.read()
         processed_image = process_image(contents)
@@ -87,7 +95,6 @@ async def predict_image(photo: UploadFile = File(...)):
 
         prediction = model.predict(processed_image)
         predicted_class = np.argmax(prediction)
-        class_names = ['Age Miracle Serum', 'Age Miracle Whip Cream', 'Men Acne Solution Facial Foam']
         predicted_class_name = class_names[predicted_class]
         
         product_details = fetch_product_details(predicted_class_name)
@@ -102,11 +109,15 @@ async def predict_image(photo: UploadFile = File(...)):
             'ingredients': ingredients
         }
 
-        return response
+        return JSONResponse(content=response, status_code=200)
     
+    except HTTPException as http_err:
+        raise http_err
     except Exception as e:
-        traceback.print_exc()
-        return {"error_message": str(e)}
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+        # Development purposes only
+        # traceback.print_exc()
+        # raise HTTPException(status_code=500, detail=str(e))
 
 port = int(os.environ.get('PORT', 8080))
 print(f"Listening to http://0.0.0.0:{port}")
