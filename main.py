@@ -115,7 +115,7 @@ async def predict_image(photo: UploadFile = File(...)):
         raise http_err
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal Server Error")
-        # utk dev
+        # Development purposes only
         # traceback.print_exc()
         # raise HTTPException(status_code=500, detail=str(e))
 
