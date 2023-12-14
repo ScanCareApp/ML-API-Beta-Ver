@@ -1,7 +1,17 @@
 # Machine Learning Model API
 
 This API handles user input of skincare product image and returns details about the predicted skincare product. It checks the uploaded file's format (JPEG or PNG), processes the image, predicts the skincare product using a machine learning model, and returns the product's details based on data stored in a database. If an error occurs during this process, it returns an appropriate error message.
-   
+
+## Table Of Contents
+1. [Machine Learning Model API](#machine-learning-model-api)
+   - [Image Prediction (`POST /predict_image`)](#image-prediction-post-predict_image)
+   - [Health Check Endpoint (`GET /`)](#health-check-endpoint-get)
+2. [Preparation and Prerequisites](#preparation-and-prerequisites)
+   - [Set Up Google Cloud](#set-up-google-cloud)
+   - [Authenticate to Secret Manager Locally](#authenticate-to-secret-manager-locally)
+3. [Running the Application Locally](#running-the-application-locally)
+4. [Deploying the Application to Cloud Run](#deploying-the-application-to-cloud-run)
+
 ## Endpoint Description
 
 ### Image Prediction (`POST /predict_image`)
@@ -107,11 +117,11 @@ Health check for API status.
     ```
 
 3. **Running the FastAPI Application**
-    - Ensure the run configuration in `main.py`:
+    - Update the run configuration in `main.py`:
         ```python
         port = int(os.environ.get('PORT', 8080))
-        print(f"Listening to http://0.0.0.0:{port}")
-        uvicorn.run(app, host='0.0.0.0', port=port)
+        print(f"Listening to http://localhost:{port}")
+        uvicorn.run(app, host='localhost', port=port)
         ```
 
 4. **Starting the Local Server**
@@ -121,6 +131,9 @@ Health check for API status.
 
 5. **Accessing the API**
     - Utilize the provided API endpoints as documented earlier.
+
+### Testing With FastAPI Swagger UI
+- View Swagger UI: `http://localhost:8080/docs` on your browser
 
 ## Deploying the Application to Cloud Run
 ```bash
