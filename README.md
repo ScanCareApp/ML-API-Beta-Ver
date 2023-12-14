@@ -137,6 +137,12 @@ Health check for API status.
 
 ## Deploying the Application to Cloud Run
 ```bash
+# Cloning the Repository
+git clone <repository_url>
+
+# Change to the destined directory
+cd <project_folder>
+
 # Create a Docker Artifact Repository in a specified region
 gcloud artifacts repositories create YOUR_REPOSITORY_NAME --repository-format=docker --location=YOUR_REGION
 
