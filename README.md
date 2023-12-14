@@ -55,7 +55,7 @@ Predicts the skincare product name from the provided image, retrieves its detail
   ```
 
 ### Health Check Endpoint (`GET /`)
-Health check for API status
+Health check for API status.
 
 #### Request:
 - **Endpoint:** `/`
