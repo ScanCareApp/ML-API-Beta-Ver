@@ -107,11 +107,11 @@ Health check for API status.
     ```
 
 3. **Running the FastAPI Application**
-    - Update the run configuration in `main.py`:
+    - Ensure the run configuration in `main.py`:
         ```python
-        port = int(os.environ.get('PORT', 8080)) # Use any desired port number
-        print(f"Listening to http://localhost:{port}")
-        uvicorn.run(app, host='localhost', port=port) 
+        port = int(os.environ.get('PORT', 8080))
+        print(f"Listening to http://0.0.0.0:{port}")
+        uvicorn.run(app, host='0.0.0.0', port=port)
         ```
 
 4. **Starting the Local Server**

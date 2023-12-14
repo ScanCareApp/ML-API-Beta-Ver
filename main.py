@@ -61,7 +61,8 @@ def fetch_product_ingredients(nobpom):
             "SELECT ingredient.idIngredient, ingredient.nameIngredients, ingredient.fungsi "
             "FROM detailproduk "
             "JOIN ingredient ON detailproduk.idIngredient = ingredient.idIngredient "
-            "WHERE detailproduk.NoBPOM = :nobpom;"
+            "WHERE detailproduk.NoBPOM = :nobpom "
+            "GROUP BY idIngredient;"
         )
         sql_statement = sql_statement.bindparams(nobpom=nobpom)
         result = conn.execute(sql_statement)
