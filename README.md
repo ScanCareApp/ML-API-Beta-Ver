@@ -118,6 +118,7 @@ Health check for API status.
 
 3. **Running the FastAPI Application**
     - Update the run configuration in `main.py`:
+      
         ```python
         port = int(os.environ.get('PORT', 8080)) # Use any desired port number
         print(f"Listening to http://localhost:{port}")
@@ -133,7 +134,7 @@ Health check for API status.
     - Utilize the provided API endpoints as documented earlier.
 
 ### Testing With FastAPI Swagger UI
-- View Swagger UI: `http://0.0.0.0:8080/docs` on your browser
+- View Swagger UI: `http://localhost:8080/docs` on your browser
 
 ## Deploying the Application to Cloud Run
 ```bash
