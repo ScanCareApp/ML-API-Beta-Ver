@@ -114,3 +114,5 @@ Predicts the skincare product name from the provided image, retrieves its detail
 
 5. **Accessing the API**
     - Utilize the provided API endpoints as documented earlier.
+
+## Deployment
