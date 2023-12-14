@@ -64,18 +64,6 @@ Health check for API status.
 #### Responses:
 - **200 OK:** Returns "API WORKING"
 
-## Usage
-
-1. **Health Check Endpoint:**
-    - **Endpoint:** `/`
-    - **Method:** `GET`
-    - **Description:** Health check for API status. Returns "API WORKING" when the API is operational.
-
-2. **Image Prediction:**
-    - **Endpoint:** `/predict_image`
-    - **Method:** `POST`
-    - **Description:** Predicts the skincare product from the provided image. Returns details about the predicted skincare product.
-
 ## Preparation and Prerequisites
 
 ### Set Up Google Cloud
