@@ -14,7 +14,7 @@ Predicts the skincare product name from the provided image, retrieves its detail
   - `photo`: Image file (JPEG or PNG)
 
 #### Responses:
-- **Success (200):** Returns details about the predicted skincare product.
+- **200 OK:** Returns details about the predicted skincare product.
     ```json
     {
       "product_details": {
@@ -41,8 +41,28 @@ Predicts the skincare product name from the provided image, retrieves its detail
       }
     }
     ```
-- **Error (400):** Invalid file format (Not an image).
-- **Error (500):** Internal server error.
+- **400 Bad Request:**.
+  ```json
+  {
+     "detail": "File is Not an Image"
+  }
+  ```
+- **500 Internal Server Error:**
+   ```json
+  {
+     "detail": "Internal Server Error"
+  }
+  ```
+
+### Health Check Endpoint (`GET /`)
+Health check for API status
+
+#### Request:
+- **Endpoint:** `/`
+- **Method:** `GET`
+
+#### Responses:
+- **200 OK:** Returns "API WORKING"
 
 ## Usage
 
@@ -67,7 +87,7 @@ Predicts the skincare product name from the provided image, retrieves its detail
 2. **Creating a SQL Instance on Google Cloud**
     - Create a MySQL instance
     - Set a password for the root user
-    - Store the password in Secret Manager
+    - Store the password in Secret Manager name it as `scancare_sql_pwd`
 
 4. **Creating a Database on Google Cloud**
    - Upload `bpom.sql` to Cloud Storage
@@ -99,20 +119,40 @@ Predicts the skincare product name from the provided image, retrieves its detail
     ```
 
 3. **Running the FastAPI Application**
-    - Update the run configuration in `main.py` or `app.py`:
+    - Update the run configuration in `main.py`:
         ```python
-        if __name__ == "__main__":
-            import uvicorn
-            
-            uvicorn.run(app, host='localhost', port=8000)  # Use any desired port number
+        port = int(os.environ.get('PORT', 8080)) # Use any desired port number
+        print(f"Listening to http://localhost:{port}")
+        uvicorn.run(app, host='localhost', port=port) 
         ```
 
 4. **Starting the Local Server**
     ```bash
-    uvicorn main:app --reload
+    python main.py
     ```
 
 5. **Accessing the API**
     - Utilize the provided API endpoints as documented earlier.
 
-## Deployment
+## Deploying the Application to Cloud Run
+```bash
+# Create a Docker Artifact Repository in a specified region
+gcloud artifacts repositories create YOUR_REPOSITORY_NAME --repository-format=docker --location=YOUR_REGION
+
+# Build Docker image for the ML API
+docker buildx build --platform linux/amd64 -t YOUR_IMAGE_PATH:YOUR_TAG --build-arg PORT=8080 .
+
+# Push the Docker image to the Artifact Repository
+docker push YOUR_IMAGE_PATH:YOUR_TAG
+
+# Deploy the Docker image to Cloud Run with allocated memory
+gcloud run deploy --image YOUR_IMAGE_PATH:YOUR_TAG --memory 3Gi
+
+# Fetching the service account associated with the newly deployed Cloud Run service
+SERVICE_ACCOUNT=$(gcloud run services describe YOUR_SERVICE_NAME --platform=managed --region=YOUR_REGION --format="value(serviceAccountEmail)")
+
+# Grant necessary IAM roles to the service account linked to the Cloud Run service
+gcloud projects add-iam-policy-binding YOUR_PROJECT_ID --member=serviceAccount:${SERVICE_ACCOUNT} --role=roles/secretmanager.secretAccessor
+
+gcloud projects add-iam-policy-binding YOUR_PROJECT_ID --member=serviceAccount:${SERVICE_ACCOUNT} --role=roles/cloudsql.client
+```
