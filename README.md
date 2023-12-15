@@ -122,7 +122,7 @@ Health check for API status.
      ```python
      sql_password = access_secret_version('YOUR_PROJECT_ID', 'scancare_sql_pwd','1')
      ```
-   - Update 'YOUR_PROJECT_ID' with your Google Cloud project ID
+   - Update `YOUR_PROJECT_ID` with your Google Cloud project ID
 
 4. **Modifying Connection to Database**
    - Navigate to `connect.py` file
@@ -138,7 +138,7 @@ Health check for API status.
        )
        return conn
      ```
-   - Update 'YOUR_SQL_INSTANCE_CONNECTION_NAME' with the connection name of your SQL instance
+   - Update `YOUR_SQL_INSTANCE_CONNECTION_NAME` with the connection name of your SQL instance
 
 5. **Running the FastAPI Application**
     - Update the run configuration in `main.py`:
