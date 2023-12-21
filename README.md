@@ -1,6 +1,9 @@
 # Machine Learning Model API
 
-This API handles user input of skincare product image and returns details about the predicted skincare product. It checks the uploaded file's format (JPEG or PNG), processes the image, predicts the skincare product using a machine learning model, and returns the product's details based on data stored in a database. If an error occurs during this process, it returns an appropriate error message.
+This API handles user input of skincare product image and returns details about the predicted skincare product. It checks the uploaded file's format (JPEG or PNG), processes the image, predicts the skincare product using a machine learning model, and returns the product's details based on data stored in a database. If an error occurs during this process, it returns an appropriate error message. 
+
+## Access Our Deployed API : 
+[ML-API](https://scancare-ml-api-lxntso327q-et.a.run.app/)
 
 ## Table Of Contents
 1. [Machine Learning Model API](#machine-learning-model-api)
@@ -187,3 +190,8 @@ gcloud projects add-iam-policy-binding YOUR_PROJECT_ID --member=serviceAccount:$
 
 gcloud projects add-iam-policy-binding YOUR_PROJECT_ID --member=serviceAccount:${SERVICE_ACCOUNT} --role=roles/cloudsql.client
 ```
+
+## Developer
+This project developed by:
+* [Tsania Magistra Rahma Insani](https://github.com/tsaniamagistra)
+* [Ni Putu Adnya Puspita Dewi](https://github.com/adnyaaa)
